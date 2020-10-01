@@ -56,7 +56,7 @@ Call ParametrosCambio
 Call RecursosCambio
 Call TipoEnvio
 'Call reemplazarCargo
-Call GeneracionOrden
+Call GeneracionOrden()
 Call EnviarOrden()
 If str_metodo_entrega <> "Delivery" Then
     Call PagoManual()
@@ -946,18 +946,32 @@ End Sub
 Sub acuerdoFacturacion
 ''Validar lo adicional en producción Pelao
 
+	wait 5
+		JavaWindow("Ejecutivo de interacción").JavaInternalFrame("Negociar Distribución_2").JavaEdit("ID del Acuerdo de Facturación:").WaitProperty "editable", 1, 10000
+	
+			Do While(JavaWindow("Ejecutivo de interacción").JavaInternalFrame("Negociar Distribución_2").JavaButton("Lookup-Validated").Exist) = False
+				wait 1
+					c=c+1 
+					If (c=30) Then exit Do 
+			Loop
+	wait 1
+	
+
        While JavaWindow("Ejecutivo de interacción").JavaInternalFrame("Negociar Distribución_2").JavaEdit("Nombre y Dirección de").Exist = False
        	wait 1
        Wend
        wait 2
-		Dim textDis
-		textDis=JavaWindow("Ejecutivo de interacción").JavaInternalFrame("Negociar Distribución_2").JavaEdit("Nombre y Dirección de").GetROProperty("text")
-		While textDis=""
+		Dim text
+		text=JavaWindow("Ejecutivo de interacción").JavaInternalFrame("Negociar Distribución_2").JavaEdit("Nombre y Dirección de").GetROProperty("text")
+		While text=""
 			wait 3
-			textDis=JavaWindow("Ejecutivo de interacción").JavaInternalFrame("Negociar Distribución_2").JavaEdit("Nombre y Dirección de").GetROProperty("text")
+			text=JavaWindow("Ejecutivo de interacción").JavaInternalFrame("Negociar Distribución_2").JavaEdit("Nombre y Dirección de").GetROProperty("text")
 		Wend
 	wait 1
 	JavaWindow("Ejecutivo de interacción").JavaInternalFrame("Negociar Distribución_2").JavaRadioButton("Única factura").Set "ON"
+	wait 2
+	JavaWindow("Ejecutivo de interacción").JavaInternalFrame("Negociar Distribución_2").JavaList("Mostrar:").Select "Acciones de orden activas "
+
 	wait 2
 	JavaWindow("Ejecutivo de interacción").JavaInternalFrame("Negociar Distribución_2").JavaEdit("ID del Acuerdo de Facturación:").WaitProperty "value", Not Empty, 30000 @@ hightlight id_;_20967626_;_script infofile_;_ZIP::ssf87.xml_;_
 	
@@ -1078,7 +1092,17 @@ Sub pagoInmediato
 		Exit SUB
 
 	End If
-	
+	While 	JavaWindow("Ejecutivo de interacción").JavaInternalFrame("Pago Inmediato").JavaEdit("Nombre a Facturar BAR").Exist=False
+		wait 1
+	Wend
+	Dim nom
+	nom=JavaWindow("Ejecutivo de interacción").JavaInternalFrame("Pago Inmediato").JavaEdit("Nombre a Facturar BAR").GetROProperty("text")
+	While nom=""
+		wait 1
+		nom=JavaWindow("Ejecutivo de interacción").JavaInternalFrame("Pago Inmediato").JavaEdit("Nombre a Facturar BAR").GetROProperty("text")
+	Wend
+
+	wait 2
 	JavaWindow("Ejecutivo de interacción").JavaInternalFrame("Pago Inmediato").JavaList("Tipo de documento:").Select "Factura"
 	wait 2
 	var8 = JavaWindow("Ejecutivo de interacción").JavaInternalFrame("Pago Inmediato").JavaEdit("Numero RUC").GetROProperty("text")
@@ -1088,7 +1112,8 @@ Sub pagoInmediato
 	End If
 	wait 1
 	
-	Dim Iterator, Count
+	Dim Iterator
+	Dim Count
 	Count = 	JavaWindow("Ejecutivo de interacción").JavaInternalFrame("Pago Inmediato").JavaList("Medio de pago").GetROProperty ("items count")
 	'MsgBox 	Count
 	For Iterator = 0 To Count-1
@@ -1097,7 +1122,7 @@ Sub pagoInmediato
 		If rs = DataTable("e_MedioPago", dtLocalSheet) Then
 				JavaWindow("Ejecutivo de interacción").JavaInternalFrame("Pago Inmediato").JavaList("Medio de pago").Select DataTable("e_MedioPago", dtLocalSheet)
 			    wait 1
-					JavaWindow("Ejecutivo de interacción").JavaInternalFrame("Pago Inmediato").JavaList("Cantidad de cuotas:").Select DataTable("e_Cant_Cuota" , dtaLocalSheet)
+					JavaWindow("Ejecutivo de interacción").JavaInternalFrame("Pago Inmediato").JavaList("Cantidad de cuotas:").Select DataTable("e_Cant_Cuota" , dtLocalSheet)
 					wait 1
 					JavaWindow("Ejecutivo de interacción").JavaInternalFrame("Pago Inmediato").JavaButton("Calcular").Click
 					JavaWindow("Ejecutivo de interacción").CaptureBitmap RutaEvidencias() &Num_Iter&"_"&"Financiamiento"&".png" , True
@@ -1592,6 +1617,10 @@ Sub PagoManual()
 			wait 1
 	Wend
 	wait 3
+	While JavaWindow("Ejecutivo de interacción").JavaInternalFrame("Buscar: Grupo de órdenes").JavaEdit("TextFieldNative$1").Exist=False
+		wait 1
+	Wend
+	wait 2
 	JavaWindow("Ejecutivo de interacción").JavaInternalFrame("Buscar: Grupo de órdenes").JavaEdit("TextFieldNative$1").SetFocus
 	wait 1
 	JavaWindow("Ejecutivo de interacción").JavaInternalFrame("Buscar: Grupo de órdenes").JavaEdit("TextFieldNative$1").Set DataTable("s_Nro_Orden", dtLocalSheet)
@@ -1875,7 +1904,10 @@ Sub EmpujeOrden()
 			End If
 		Loop While Not JavaWindow("Ejecutivo de interacción").JavaInternalFrame("Buscar: Grupo de órdenes").JavaButton("Finalizar compra y activar").Exist
 		wait 2
-	
+		While JavaWindow("Ejecutivo de interacción").JavaInternalFrame("Buscar: Grupo de órdenes").JavaEdit("TextFieldNative$1").Exist=False
+			wait 1
+		Wend
+		wait 2
 		JavaWindow("Ejecutivo de interacción").JavaInternalFrame("Buscar: Grupo de órdenes").JavaEdit("TextFieldNative$1").SetFocus @@ hightlight id_;_14588149_;_script infofile_;_ZIP::ssf111.xml_;_
 		JavaWindow("Ejecutivo de interacción").JavaInternalFrame("Buscar: Grupo de órdenes").JavaEdit("TextFieldNative$1").Set DataTable("s_Nro_Orden", dtLocalSheet)
 		wait 2
